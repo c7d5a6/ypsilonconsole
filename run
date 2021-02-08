@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Or globally with TypeScript.
+# npm install -g typescript
+# npm install -g ts-node
+
+clear
+
+ts-node -O '{"lib": [ "es2015", "dom" ]}' console.ts
