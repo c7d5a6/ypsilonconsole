@@ -6,4 +6,4 @@
 
 clear
 
-ts-node -O '{"lib": [ "es2015", "dom" ]}' console.ts
+ts-node-script -O '{"lib": [ "es7", "dom", "scripthost" ]}' console.ts
