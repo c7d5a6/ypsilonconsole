@@ -8,12 +8,12 @@ const readline = require('readline');
 const width = 211;
 const terminalWidth = 80;
 const margin = (width - terminalWidth) / 2;
-type State = 'INTRO' | 'HOME' | 'DIAGNOSTICS' | 'SCHEDULE' | 'CONTROLS' | 'ROSTER' | 'COMMS' | 'LAYOUT' | 'STATUS';
+type State = 'INTRO' | 'HOME' | 'DIAGNOSTICS' | 'SCHEDULE' | 'CONTROLS' | 'ROSTER' | 'COMMS' | 'LAYOUT' | 'STATUS' | 'AIRLOCK' | 'SHOWERS' | 'SYSTEM';
 let currentState: State = 'HOME';
 let rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: `\n${' '.repeat(margin)}>>>`
+    prompt: `\n${' '.repeat(margin)}>>> `
 });
 let stateCommands: Map<State, string[]> = new Map();
 stateCommands.set('HOME', ['DIAGNOSTICS', 'SCHEDULE', 'CONTROLS', 'ROSTER', 'COMMS'])
@@ -22,6 +22,11 @@ stateCommands.set('ROSTER', ['BACK'])
 stateCommands.set('STATUS', ['BACK'])
 stateCommands.set('DIAGNOSTICS', ['LAYOUT', 'STATUS', 'BACK'])
 stateCommands.set('LAYOUT', ['PRINT', 'BACK'])
+stateCommands.set('CONTROLS', ['AIRLOCK', 'SHOWERS', 'SYSTEM [A]', 'BACK'])
+stateCommands.set('COMMS', ['HAIL #', 'BACK'])
+stateCommands.set('AIRLOCK', ['OPEN #', 'CLOSE #', 'BACK'])
+stateCommands.set('SHOWERS', ['OFF WATER', 'ON WATER', 'BACK'])
+stateCommands.set('SYSTEM', ['ON LIFESUPPORT', 'OFF LIFESUPPORT', 'SELF-DESTRUCT', 'BACK'])
 
 
 // const states = [
@@ -104,6 +109,8 @@ const run = async () => {
                         break;
                     case 'CONTROLS':
                         currentState = "CONTROLS";
+                        log___("\n");
+                        log___("CONTROLS");
                         break;
                     case 'ROSTER':
                         currentState = "ROSTER";
@@ -111,6 +118,7 @@ const run = async () => {
                         break;
                     case 'COMMS':
                         currentState = "COMMS";
+                        await comms();
                         break;
                     case '':
                     case undefined:
@@ -222,6 +230,111 @@ const run = async () => {
                         await delay(1);
                 }
                 break;
+            case 'COMMS':
+                switch (line.toLocaleUpperCase()) {
+                    case 'BACK':
+                        currentState = "HOME";
+                        await home();
+                        break;
+                    case '':
+                    case undefined:
+                        await comms();
+                        break;
+                    default:
+                        if (line.toLocaleUpperCase().startsWith('HAIL '))
+                            if (line.substring(5) == '1') {
+                                log___("\n")
+                                log___("HAILING RSV THE HERACLES");
+                                log___("\n")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(2);
+                                log___("\n")
+                                logErr("NO ANSWER");
+                                break;
+                            } else if (line.substring(5) == '2') {
+                                log___("\n")
+                                log___("HAILING STS BEHOLDER");
+                                log___("\n")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___("\n")
+                                log___("SENDING SYN")
+                                log___("\n")
+                                await delay(0.5);
+                                log___(".")
+                                await delay(1);
+                                log___("\n")
+                                log___("WAITING SYN-ACK")
+                                log___("\n")
+                                await delay(2);
+                                log___(".")
+                                await delay(1);
+                                log___(".")
+                                await delay(1);
+                                log___("\n")
+                                logSuc("RECEIVED SYN-ACK")
+                                log___("\n")
+                                await delay(0.8);
+                                log___(".")
+                                await delay(1);
+                                log___("\n")
+                                log___("SENDING ACK")
+                                log___("\n")
+                                await delay(0.3);
+                                log___(".")
+                                await delay(1);
+                                log___("\n")
+                                logSuc("CONNECTION ESTABLISHED")
+                                log___("\n")
+                                await delay(0.2);
+                                log___("\n")
+                                log___("\n")
+                                logSuc("INTERCOMM ACTIVATED")
+                                log___("\n")
+                                break;
+                            }
+                        logErr("SYNTAX ERROR");
+                        await delay(1);
+                }
+                break;
+            case 'CONTROLS':
+                switch (line.toLocaleUpperCase()) {
+                    case 'LAYOUT':
+                        currentState = "LAYOUT";
+                        await layout();
+                        break;
+                    case 'STATUS':
+                        currentState = "STATUS";
+                        await statusScr();
+                        break;
+                    case 'BACK':
+                        currentState = "HOME";
+                        await home();
+                        break;
+                    case '':
+                    case undefined:
+                        log___("\n");
+                        log___("CONTROLS");
+                        break;
+                    default:
+                        logErr("SYNTAX ERROR");
+                        await delay(1);
+                }
+                break;
             default:
                 await delay(1);
         }
@@ -267,20 +380,20 @@ const scedule = async () => {
     log___('\n');
     log___('DOCKING BAY ACTIVITY');
     log___('\n');
-    log___('2255-07-02 06:33 - IMV GRASSHOPPER    - RESUPPLY : DOCKING BAY 2 :: DOCK');
+    log___('2867-07-02 06:33 - STS BEHOLDER    - RESUPPLY : DOCKING BAY 2 :: DOCK');
     await delay(0.3);
-    log___('2255-06-04 08:34 - RSV THE HERACLES   - RESEARCH : DOCKING BAY 1 :: DOCK');
-    log___('2255-06-02 12:23 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DEPART');
-    log___('2255-06-01 16:04 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DOCK');
+    log___('2867-06-04 08:34 - RSV THE HERACLES   - RESEARCH : DOCKING BAY 1 :: DOCK');
+    log___('2867-06-02 12:23 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DEPART');
+    log___('2867-06-01 16:04 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DOCK');
     await delay(0.2);
-    log___('2255-05-02 08:32 - MV VASQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DEPART');
-    log___('2255-05-01 06:02 - MV VASQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DOCK');
+    log___('2867-05-02 08:32 - MV VASQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DEPART');
+    log___('2867-05-01 06:02 - MV VASQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DOCK');
     await delay(0.3);
-    log___('2255-04-02 13:02 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DEPART');
-    log___('2255-04-01 15:54 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DOCK');
+    log___('2867-04-02 13:02 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DEPART');
+    log___('2867-04-01 15:54 - CTV HORN OV PLENTY - RESUPPLY : DOCKING BAY 2 :: DOCK');
     await delay(0.4);
-    log___('2255-03-02 08:33 - MV VAZQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DEPART');
-    log___('2255-03-01 06:04 - MV VAZQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DOCK');
+    log___('2867-03-02 08:33 - MV VAZQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DEPART');
+    log___('2867-03-01 06:04 - MV VAZQUEZ XV      - PICKUP   : DOCKING BAY 1 :: DOCK');
 }
 
 const roster = async () => {
@@ -288,13 +401,13 @@ const roster = async () => {
     log___('ROSTER');
     log___('\n');
     await delay(0.5);
-    log___('01. VERHOEVEN, SONYA     :: OVERSEER');
-    log___('02. SINGH, ASHRAF        :: BREAKER');
-    log___('03. DE BEERS, DANA       :: HEAD DRILLER');
-    log___('04. HUIZINGA, JEROME     :: ASST. DRILLER');
-    log___('05. TOBIN, ROSA          :: MINING ENGINEER');
-    log___('06. MIKKELSEN, MICHAEL   :: MINING ENGINEER');
-    log___('07. KANTARO, KENJI       :: LOADER');
+    log___('01. VERHOEVEN, SONYA     :: EXECUTIVE OFFICER');
+    log___('02. MIKKELSEN, MICHAEL   :: HEAD MINING ENGINEER');
+    log___('03. SINGH, ASHRAF        :: MINING ENGINEER');
+    log___('04. KANTARO, KENJI       :: MINING ENGINEER');
+    log___('05. DE BEERS, DANA       :: HEAD DRILLER');
+    log___('06. HUIZINGA, JEROME     :: ASST. DRILLER');
+    log___('07. TOBIN, ROSA          :: LOADER');
     log___('08. OBOWE, MORGAN        :: LOADER');
     log___('09. KENBISHI, RIE        :: PUTTER');
     await delay(0.5);
@@ -370,6 +483,24 @@ const layout = async () => {
     log___('▓ HERACLES ▓ RESUPPLY ▓VERSION SOFTWARE 2.25B▓');
     log___('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
     log___('\n');
+}
+
+const comms = async () => {
+    log___('\n');
+    log___('COMMS');
+    log___('\n');
+    rl.write(`${' '.repeat(margin)}SCANNING FOR NEARBY SHIPS `);
+    await delay(0.5);
+    rl.write('. ');
+    await delay(0.5);
+    rl.write('. ');
+    await delay(0.5);
+    rl.write('. ');
+    log___('\n');
+    await delay(1);
+    rl.clearLine();
+    log___('[1] HAIL RSV THE HERACLES');
+    log___('[2] HAIL STS BEHOLDER');
 }
 
 const printCommands = async (state: State) => {
