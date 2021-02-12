@@ -15,6 +15,11 @@ let rl = readline.createInterface({
     output: process.stdout,
     prompt: `\n${' '.repeat(margin)}>>> `
 });
+let cardIn = false;
+let hacked = false;
+const lockedDoors = [true, false, false]
+let water = true;
+let life = true;
 let stateCommands: Map<State, string[]> = new Map();
 stateCommands.set('HOME', ['DIAGNOSTICS', 'SCHEDULE', 'CONTROLS', 'ROSTER', 'COMMS'])
 stateCommands.set('SCHEDULE', ['BACK'])
@@ -25,8 +30,8 @@ stateCommands.set('LAYOUT', ['PRINT', 'BACK'])
 stateCommands.set('CONTROLS', ['AIRLOCK', 'SHOWERS', 'SYSTEM [A]', 'BACK'])
 stateCommands.set('COMMS', ['HAIL #', 'BACK'])
 stateCommands.set('AIRLOCK', ['OPEN #', 'CLOSE #', 'BACK'])
-stateCommands.set('SHOWERS', ['OFF WATER', 'ON WATER', 'BACK'])
-stateCommands.set('SYSTEM', ['ON LIFESUPPORT', 'OFF LIFESUPPORT', 'SELF-DESTRUCT', 'BACK'])
+stateCommands.set('SHOWERS', ['WATER', 'BACK'])
+stateCommands.set('SYSTEM', ['LIFESUPPORT', 'SELF-DESTRUCT', 'BACK'])
 
 
 // const states = [
@@ -76,6 +81,7 @@ const runMain = async () => {
 const run = async () => {
     for await (const line of rl) {
         if (line.toLocaleUpperCase() == "INSERT CARD") {
+            cardIn = true;
             log___("\n")
             log___(".")
             await delay(1);
@@ -92,6 +98,28 @@ const run = async () => {
             log___("\n")
             await delay(0.3);
             log___("WELCOME SONYA")
+            rl.prompt();
+            continue;
+        }
+        if (line.toLocaleUpperCase() == "HACK SYSTEM") {
+            hacked = true;
+            log___("\n")
+            log___(".")
+            await delay(1);
+            log___(".")
+            await delay(1);
+            log___(".͙͍̓͒")
+            await delay(0.3);
+            log___("\n")
+            logSuc("Ǎ̧̪̅D̲͓̫̍̊̕M̙͚̹̈́͋͡Ị̼̗̓̐̐N͈̜͛̀I̐͜S͘ͅTRA̯͂TIO̬̹͌́N ̹̑͝ͅAC̦͈̠̋̎͞CĚ͙S͍̼̏̃S ͈̄C̮̐Ȃ̯̚ͅRD͇͒ ̯̅I̫̅NS̹̮͐̈́E͖̲̋̈́R̤̭̰̿͌̔T̼̮̹̔͊̄Ê̲͍͑D̺̤̽̕Ǎ̧̪̅D̲͓̫̍̊̕M̙͚̹̈́͋͡Ị̼̗̓̐̐N͈̜͛̀I̐͜S͘ͅTRA̯͂TIO̬̹͌́N ̹̑͝ͅAC̦͈̠̋̎͞CĚ͙S͍̼̏̃S ͈̄C̮̐Ȃ̯̚ͅRD͇͒ ̯̅I̫̅NS̹̮͐̈́E͖̲̋̈́R̤̭̰̿͌̔T̼̮̹̔͊̄Ê̲͍͑D̺̤̽̕Ǎ̧̪̅D̲͓̫̍̊̕M̙͚̹̈́͋͡Ị̼̗̓̐̐N͈̜͛̀I̐͜S͘ͅTRA̯͂TIO̬̹͌́N ̹̑͝ͅAC̦͈̠̋̎͞CĚ͙S͍̼̏̃S ͈̄C̮̐Ȃ̯̚ͅRD͇͒ ̯̅I̫̅NS̹̮͐̈́E͖̲̋̈́R̤̭̰̿͌̔T̼̮̹̔͊̄Ê̲͍͑D̺̤̽̕")
+            logSuc("")
+            log___("\n")
+            log___(".̗̎")
+            await delay(0.5);
+            log___(".͉͇͑̐")
+            log___("\n")
+            await delay(0.3);
+            log___("Ŵ̮͚̩̉͐E̟̾LCO̢̿M̥̱͊͛Ế̜̮̼̚ ͔̓S͙͠O̢̰̩͒͂͂N̢̆Ŷ͖A̩͆")
             rl.prompt();
             continue;
         }
@@ -313,14 +341,25 @@ const run = async () => {
                 break;
             case 'CONTROLS':
                 switch (line.toLocaleUpperCase()) {
-                    case 'LAYOUT':
-                        currentState = "LAYOUT";
-                        await layout();
+                    case 'AIRLOCK':
+                        currentState = "AIRLOCK";
+                        await airlock();
                         break;
-                    case 'STATUS':
-                        currentState = "STATUS";
-                        await statusScr();
+                    case 'SHOWERS':
+                        currentState = "SHOWERS";
+                        await showers();
                         break;
+                    case 'SYSTEM':
+                        if (hacked || cardIn) {
+                            currentState = "SYSTEM";
+                            await system();
+                            break;
+                        } else {
+                            log___("\n");
+                            logErr("ACCESS DENIED. ADMIN KEYCARD REQUIRED");
+                            await delay(1);
+                            break;
+                        }
                     case 'BACK':
                         currentState = "HOME";
                         await home();
@@ -329,6 +368,86 @@ const run = async () => {
                     case undefined:
                         log___("\n");
                         log___("CONTROLS");
+                        break;
+                    default:
+                        logErr("SYNTAX ERROR");
+                        await delay(1);
+                }
+                break;
+            case 'AIRLOCK':
+                switch (line.toLocaleUpperCase()) {
+                    case 'BACK':
+                        currentState = "CONTROLS";
+                        log___("\n");
+                        log___("CONTROLS");
+                        break;
+                    case '':
+                    case undefined:
+                        await airlock();
+                        break;
+                    default:
+                        if (line.toLocaleUpperCase().startsWith('OPEN ')) {
+                            if (line.substring(5) == '1') {
+                                await switchAirlock(0, false);
+                                break;
+                            } else if (line.substring(5) == '2') {
+                                await switchAirlock(1, false);
+                                break;
+                            } else if (line.substring(5) == '3') {
+                                await switchAirlock(2, false);
+                                break;
+                            }
+                        } else if (line.toLocaleUpperCase().startsWith('CLOSE '))
+                            if (line.substring(6) == '1') {
+                                await switchAirlock(0, true);
+                                break;
+                            } else if (line.substring(6) == '2') {
+                                await switchAirlock(1, true);
+                                break;
+                            } else if (line.substring(6) == '3') {
+                                await switchAirlock(2, true);
+                                break;
+                            }
+                        logErr("SYNTAX ERROR");
+                        await delay(1);
+                }
+                break;
+            case 'SHOWERS':
+                switch (line.toLocaleUpperCase()) {
+                    case 'BACK':
+                        currentState = "CONTROLS";
+                        log___("\n");
+                        log___("CONTROLS");
+                        break;
+                    case 'WATER':
+                        log___("\n");
+                        if (water)
+                            log___("WATER TURNED OFF");
+                        else
+                            log___("WATER TURNED ON");
+                        water = !water;
+                        await delay(1);
+                        await showers();
+                        break;
+                    case '':
+                    case undefined:
+                        await showers();
+                        break;
+                    default:
+                        logErr("SYNTAX ERROR");
+                        await delay(1);
+                }
+                break;
+            case 'SYSTEM':
+                switch (line.toLocaleUpperCase()) {
+                    case 'BACK':
+                        currentState = "CONTROLS";
+                        log___("\n");
+                        log___("CONTROLS");
+                        break;
+                    case '':
+                    case undefined:
+                        await system();
                         break;
                     default:
                         logErr("SYNTAX ERROR");
@@ -516,6 +635,69 @@ const comms = async () => {
     rl.clearLine();
     log___('[1] HAIL RSV THE HERACLES');
     log___('[2] HAIL STS BEHOLDER');
+}
+
+const airlock = async () => {
+    log___('\n');
+    log___('AIRLOCK');
+    log___('\n');
+    await delay(0.5);
+    log___(`[1] DOCKING BAY 1 [> ${lockedDoors[0] ? 'LOCKED' : '\x1b[1;32mUNLOCKED\x1b[0m'}]`)
+    await delay(0.5);
+    log___(`[2] DOCKING BAY 2 [> ${lockedDoors[1] ? 'LOCKED' : '\x1b[1;32mUNLOCKED\x1b[0m'}]`)
+    await delay(0.5);
+    log___(`[3] MINESHAFT [> ${lockedDoors[2] ? 'LOCKED' : '\x1b[1;32mUNLOCKED\x1b[0m'}]`)
+}
+const showers = async () => {
+    log___('\n');
+    log___('SHOWERS');
+    log___('\n');
+    await delay(0.5);
+    log___(`WATER [> ${water ? '\x1b[1;32mON\x1b[0m' : 'OFF'}]`)
+    log___('\n');
+    await delay(0.5);
+    log___("SHOWER 1 [> ON]")
+    await delay(0.2);
+    log___("SHOWER 2 [> ON]")
+    await delay(0.3);
+    log___("SHOWER 3 [> ON]")
+    await delay(0.4);
+    log___("SHOWER 4 [> ON]")
+    await delay(1.5);
+    log___("SHOWER 5 [> \x1b[31mOUT OF ORDER\x1b[0m]")
+    await delay(0.3);
+    log___("SHOWER 6 [> ON]")
+}
+const system = async () => {
+    
+}
+const switchAirlock = async (i: number, close: boolean) => {
+    log___('\n');
+    if (close)
+        log___("INITIALIZING LOCK.  NOTE - DOOR MUST BE MANUALLY CLOSED FIRST.")
+    else
+        log___("UNLOCKING.  NOTE - DOOR MUST BE MANUALLY OPENED AFTER PROCEDURE.")
+    await delay(0.5);
+    log___('. ');
+    await delay(0.5);
+    log___('. ');
+    await delay(0.5);
+    log___('. ');
+    log___('\n');
+    await delay(1);
+    if (lockedDoors[i] == close) {
+        if (close)
+            logWar("ALREADY LOCKED.")
+        else
+            logWar("ALREADY OPENED.")
+    } else {
+        if (close)
+            logSuc("CLOSED.")
+        else
+            logSuc("OPENED.")
+        lockedDoors[i] = !lockedDoors[i];
+    }
+    await airlock();
 }
 
 const printCommands = async (state: State) => {
